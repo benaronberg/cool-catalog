@@ -1,0 +1,12 @@
+<html>
+<body>
+	<h1>{{category.name}}</h1>
+	<h2>{{item.name}}</h2>
+	<p>{{item.description}}</p>
+
+	<a href='{{url_for('editItem', item=item.name, category=category.name)}}'>Edit Item</a>
+	<a href='{{url_for('deleteItem', item=item.name, category=category.name)}}'>Delete Item</a></br></br>
+
+	</br><a href = "{{url_for('catalog')}}">Back to Catalog</a>
+</body>
+</html>

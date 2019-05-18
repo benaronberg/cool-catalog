@@ -1,0 +1,23 @@
+<html>
+<head>
+	<!-- <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}"> -->
+</head>
+<body>
+	<div>
+		<h1>{{category}}</h1>
+		<a href='{{url_for('editCategory', category=category)}}''>Edit Category</a></br></br>
+
+		{% if items|length %}
+		{% for i in items %}
+		<div>
+			<a href='{{url_for('item',item = i.name, category=category)}}'>{{i.name}}</a></br>
+		</div>
+		{% endfor %}
+		{% else %}	
+		<div>There's no items!</div></br>
+		{% endif %}
+
+		</br><a href = "{{url_for('catalog')}}">Back to Catalog</a>
+	</div>
+</body>
+</html>

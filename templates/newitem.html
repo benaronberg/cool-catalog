@@ -1,0 +1,26 @@
+<html>
+<body>
+<h1>New Item</h1>
+
+<form action="{{url_for('newItem')}}" method = 'POST'>
+
+<p>Name:</p>
+<input type='text' size='30' name='name'>
+
+<p>Description:</p>
+<input type='text' size='250' name='description'>
+
+<p>Category:</p>
+ <select name="category">
+ 	{% for c in categories %}
+ 	<option value="{{c.name}}">{{c.name}}</option>
+ 	{% endfor %}
+</select> 
+
+<input type='submit' value='Create'>
+
+</form>
+
+</br><a href = "{{url_for('catalog')}}">Cancel</a>
+</body>
+</html>

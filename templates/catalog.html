@@ -1,0 +1,25 @@
+<html>
+<head>
+	<!-- <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}"> -->
+</head>
+<body>
+	<div>
+		<div>
+			<h1>Catalog Home Page</h1>
+			<a href='{{url_for('newCategory')}}''>New Category</a>
+			<a href='{{url_for('newItem')}}''>New Item</a></br></br>
+		</div>
+		{% if categories|length %}
+		{% for c in categories %}
+		<div>
+			<a href='{{url_for('category',category=c.name)}}'>{{c.name}}</a></br>
+			<a href='{{url_for('editCategory',category=c.name)}}'>Edit</a>
+			<a href='{{url_for('deleteCategory',category=c.name)}}'>Delete</a></br></br>
+		</div>
+		{% endfor %}
+		{% else %}
+		<div>There's no categories!</div>
+		{% endif %}
+	</div>
+</body>
+</html>
