@@ -6,6 +6,13 @@
 	<div>
 		<div>
 			<h1>Catalog Home Page</h1>
+			</div>
+				{% if loggedIn %}
+				<a href='{{url_for('gdisconnect')}}''>Logout</a>
+				{% else %}
+				<a href='{{url_for('login')}}''>Login</a>
+				{% endif %}
+			<div>
 			<a href='{{url_for('newCategory')}}''>New Category</a>
 			<a href='{{url_for('newItem')}}''>New Item</a></br></br>
 		</div>
