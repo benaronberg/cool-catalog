@@ -6,6 +6,15 @@
 <body>
 	<div>
 		<h1>{{category}}</h1>
+		{% with messages = get_flashed_messages() %}
+  		{% if messages %}
+  		 <ul class=flashes>
+    		{% for message in messages %}
+      		<li>{{ message }}</li>
+    		{% endfor %}
+   		</ul>
+  		{% endif %}
+		{% endwith %}
 		<a href='{{url_for('editCategory', category=category)}}''>Edit Category</a></br>
 
 		{% if items|length %}
@@ -15,7 +24,7 @@
 		{% endfor %}
 		</div>
 		{% else %}	
-		<div>There's no items!</div></br>
+		<p>There's no items!</p>
 		{% endif %}
 
 		</br><a href = "{{url_for('catalog')}}">Back to Catalog</a>

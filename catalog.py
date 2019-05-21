@@ -24,7 +24,6 @@ APPLICATION_NAME = "cool-catalog"
 # Connect to Database and create database session
 engine = create_engine('sqlite:///catalog.db')
 Base.metadata.bind = engine
-
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
@@ -138,6 +137,7 @@ def gdisconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
+        flash("Logged out!")
         return redirect(url_for('catalog'))
     else:
         response = make_response(json.dumps('Failed to revoke token for given user.', 400))
@@ -178,11 +178,11 @@ def newCategory():
 		categories = session.query(Category).all()
 		for c in categories:
 			if c.name == newCategory.name:
-				#flash("%s found in categories already" % newCategory.name)
+				flash("%s found in categories already" % newCategory.name)
 				return redirect(url_for('category', category = newCategory.name))
 		session.add(newCategory)
 		session.commit()
-		#flash("New category created!")
+		flash("New category created!")
 		return redirect(url_for('category', category = request.form['name']))
 	else:
 		return render_template('newcategory.html')
@@ -198,7 +198,7 @@ def editCategory(category):
 			editedCategory.name = request.form['name']
 		session.add(editedCategory)
 		session.commit()
-		#flash("Category modified")
+		flash("Category modified")
 		return redirect(url_for('category', category = editedCategory.name))
 	else:
 		return render_template('editcategory.html',category = category)
@@ -212,7 +212,7 @@ def deleteCategory(category):
 		categoryToDelete = session.query(Category).filter_by(name = category).one()
 		session.delete(categoryToDelete)
 		session.commit()
-		#flash("Category deleted")
+		flash("Category deleted")
 		return redirect(url_for('catalog'))
 	else:
 		return render_template('deletecategory.html', category=category)
@@ -238,7 +238,7 @@ def editItem(item, category):
 			editedItem.description = request.form['description']
 		session.add(editedItem)
 		session.commit()
-		#flash("Item edited")
+		flash("Item edited")
 		return redirect(url_for('category',category = category))
 	else:
 		return render_template('edititem.html', item=editedItem, category=mCategory)
@@ -253,7 +253,7 @@ def deleteItem(item, category):
 	if request.method == 'POST':
 		session.delete(mItem)
 		session.commit()
-		#flash("Item deleted")
+		flash("Item deleted")
 		return redirect(url_for('category',category = category))
 	else:
 		return render_template('deleteitem.html', item=mItem, category=mCategory)
@@ -271,10 +271,10 @@ def newItem():
 			newItem = Item(name = request.form['name'], description = request.form['description'], category = mCategory)
 			session.add(newItem)
 			session.commit()
-			#flash("New item created!")
+			flash("New item created!")
 			return redirect(url_for('category', category = mCategory.name))
 		else:
-			#flash("%s already exists in %s" % request.form['name'], mCategory.name)
+			flash("%s already exists in %s" % (request.form['name'], mCategory.name))
 			return redirect(url_for('item', item=request.form['name'], category=mCategory.name))
 	else: 	
 		categories = session.query(Category).all()

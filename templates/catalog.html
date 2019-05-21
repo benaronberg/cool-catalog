@@ -22,6 +22,18 @@
 			<a class='a2' href='{{url_for('newCategory')}}''>New Category</a>
 			<a class='a2' href='{{url_for('newItem')}}''>New Item</a></br></br>
 		</div>
+
+		{% with messages = get_flashed_messages() %}
+  		{% if messages %}
+  		 <ul class=flashes>
+    		{% for message in messages %}
+      		<li>{{ message }}</li>
+    		{% endfor %}
+   		</ul>
+  		{% endif %}
+		{% endwith %}
+
+
 		{% if categories|length %}
 		{% for c in categories %}
 		<div>
