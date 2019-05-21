@@ -1,27 +1,33 @@
 <html>
 <head>
-	<!-- <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}"> -->
+	<link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+	<link href="https://fonts.googleapis.com/css?family=Kodchasan|Nunito&display=swap" rel="stylesheet"> 
 </head>
 <body>
-	<div>
+	<div class="container">
 		<div>
-			<h1>Catalog Home Page</h1>
+			<div class="header">
+				<span class="title">Cool Catalog</span>
+				<div class="authenticate">
+					{% if loggedIn %}
+					<a class="glink" href='{{url_for('gdisconnect')}}''>Logout</a>
+					{% else %}
+					<a class="glink" href='{{url_for('login')}}''>Login</a>
+					{% endif %}
+				</div>
 			</div>
-				{% if loggedIn %}
-				<a href='{{url_for('gdisconnect')}}''>Logout</a>
-				{% else %}
-				<a href='{{url_for('login')}}''>Login</a>
-				{% endif %}
-			<div>
-			<a href='{{url_for('newCategory')}}''>New Category</a>
-			<a href='{{url_for('newItem')}}''>New Item</a></br></br>
+			
+		</div>
+		<div>
+			<a class='a2' href='{{url_for('newCategory')}}''>New Category</a>
+			<a class='a2' href='{{url_for('newItem')}}''>New Item</a></br></br>
 		</div>
 		{% if categories|length %}
 		{% for c in categories %}
 		<div>
 			<a href='{{url_for('category',category=c.name)}}'>{{c.name}}</a></br>
-			<a href='{{url_for('editCategory',category=c.name)}}'>Edit</a>
-			<a href='{{url_for('deleteCategory',category=c.name)}}'>Delete</a></br></br>
+			<a class='a3' href='{{url_for('editCategory',category=c.name)}}'>Edit</a>
+			<a class='a3' href='{{url_for('deleteCategory',category=c.name)}}'>Delete</a></br></br>
 		</div>
 		{% endfor %}
 		{% else %}

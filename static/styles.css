@@ -1,0 +1,133 @@
+html {
+	background-color: #212624
+}
+
+h1 {
+	font-family: 'Kodchasan', sans-serif;
+	font-size: 28px;
+	color: #a5cebe;
+	font-weight: 300
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-size: 24px;
+	color: #a5cebe;
+	line-height: 29px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-size: 18px;
+	color: #a5cebe;
+	line-height: 23px;
+}
+
+p {
+ 	font-family: 'Nunito', sans-serif;
+ 	font-size: 16px;
+ 	color: #a5cebe;
+ 	line-height: 24px;
+ 	font-weight: 400;
+ }
+
+ a {
+ 	font-family: 'Nunito', sans-serif;
+ 	font-size: 16px;
+ 	color: #6be0da;
+ 	line-height: 17px;
+ 	text-decoration: none;
+ 	margin-right: 12px;
+ }
+
+div {
+	font-family: 'Kodchasan', sans-serif;
+}
+
+.a2 {
+	font-family: 'Nunito', sans-serif;
+ 	font-size: 20px;
+ 	color: #94ceb7;
+ 	line-height: 18px;
+ 	text-decoration: none;
+ 	margin-right: 10px;
+}
+
+.a3 {
+	font-family: 'Nunito', sans-serif;
+ 	font-size: 12px;
+ 	color: #7c7f7e;
+ 	line-height: 12px;
+ 	text-decoration: none;
+ 	margin-right: 5px;
+}
+
+.flash {
+	background-color: #98FB98;
+	width:100%;
+	text-decoration: none;
+
+}
+
+.header {
+	background-color: #939e99;
+	font-size: 40px;
+	color: #51453B;
+	font-weight: 300;
+	height: 75px;
+	line-height: 75px;
+}
+
+.authenticate {
+	margin-top: 20px;
+	float: right;
+}
+
+#signinButton {
+	display: inline-block;
+    background: white;
+    color: #2d2d2d;
+    width: 190px;
+    border-radius: 5px;
+    border: thin solid #888;
+    box-shadow: 1px 1px 1px #2d2d2d;
+    white-space: nowrap;	
+}
+    
+#signinButton:hover {
+      cursor: pointer;
+      background: #4885ed;
+      color: white
+}
+
+.glink {
+	display: inline-block;
+    background: #4885ed;
+    color: #2d2d2d;
+    width: 50px;
+    height: 30px;
+    border-radius: 5px;
+    border: thin solid #888;
+    box-shadow: 1px 1px 1px #2d2d2d;
+    white-space: nowrap;	
+    text-decoration: none;
+    text-align: center;
+	vertical-align: middle;
+	line-height: 30px
+}
+
+.glink:hover {
+      cursor: pointer;
+      background: #1458cc;
+      color: white
+}
+
+.title {
+	padding-left: 10px;
+}
+
+.items {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	background-color: #474f4c;
+}

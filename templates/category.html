@@ -1,18 +1,19 @@
 <html>
 <head>
-	<!-- <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}"> -->
+	<link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+	<link href="https://fonts.googleapis.com/css?family=Kodchasan|Nunito&display=swap" rel="stylesheet"> 
 </head>
 <body>
 	<div>
 		<h1>{{category}}</h1>
-		<a href='{{url_for('editCategory', category=category)}}''>Edit Category</a></br></br>
+		<a href='{{url_for('editCategory', category=category)}}''>Edit Category</a></br>
 
 		{% if items|length %}
-		{% for i in items %}
-		<div>
+		<div class="items">
+		{% for i in items %}	
 			<a href='{{url_for('item',item = i.name, category=category)}}'>{{i.name}}</a></br>
-		</div>
 		{% endfor %}
+		</div>
 		{% else %}	
 		<div>There's no items!</div></br>
 		{% endif %}

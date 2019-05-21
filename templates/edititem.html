@@ -1,4 +1,8 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+	<link href="https://fonts.googleapis.com/css?family=Kodchasan|Nunito&display=swap" rel="stylesheet"> 
+</head>
 <body>
 	<h1>Edit Item</h1>
 	<form action= "{{url_for('editItem', item=item.name, category=category.name)}}" method = 'POST'>

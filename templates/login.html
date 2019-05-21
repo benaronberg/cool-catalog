@@ -1,5 +1,7 @@
 <html>
 <head>
+	<link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+	<link href="https://fonts.googleapis.com/css?family=Kodchasan|Nunito&display=swap" rel="stylesheet"> 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
 	<script>
@@ -13,7 +15,7 @@
 	</script>
 </head>
 <body>
-	<button id="signinButton">Google Signin</button>
+	<button id="signinButton">Sign in with Google</button>
 	<div id="result"></div>
 
 	<script>
