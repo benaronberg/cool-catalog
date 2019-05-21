@@ -280,6 +280,32 @@ def newItem():
 		categories = session.query(Category).all()
 		return render_template('newitem.html', categories=categories)	
 
+# JSON API endpoints
+
+@app.route('/catalog/JSON')
+def categoriesJSON():
+	if 'username' not in login_session:
+		return redirect(url_for('login'))
+	categories = session.query(Category).all()
+	return jsonify(Categories = [c.serialize for c in categories])
+
+
+@app.route('/catalog/<category>/JSON')
+def categoryJSON(category):
+	if 'username' not in login_session:
+		return redirect(url_for('login'))
+	mCategory = session.query(Category).filter_by(name = category).one()
+	items = session.query(Item).filter_by(category = mCategory).all()
+	return jsonify(Category = category, Items = [i.serialize for i in items])
+
+
+@app.route('/catalog/<category>/<item>/JSON')
+def itemJSON(item,category):
+	if 'username' not in login_session:
+		return redirect(url_for('login'))
+	category = session.query(Category).filter_by(name = category).one()
+	item = session.query(Item).filter(and_(Item.name==item,Item.category==category)).one()
+	return jsonify(Item = item.serialize, Category = category.serialize)
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
