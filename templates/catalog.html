@@ -38,8 +38,6 @@
 		{% for c in categories %}
 		<div>
 			<a href='{{url_for('category',category=c.name)}}'>{{c.name}}</a></br>
-			<a class='a3' href='{{url_for('editCategory',category=c.name)}}'>Edit</a>
-			<a class='a3' href='{{url_for('deleteCategory',category=c.name)}}'>Delete</a></br></br>
 		</div>
 		{% endfor %}
 		{% else %}

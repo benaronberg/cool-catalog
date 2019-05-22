@@ -1,0 +1,32 @@
+<html>
+<head>
+	<link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+	<link href="https://fonts.googleapis.com/css?family=Kodchasan|Nunito&display=swap" rel="stylesheet"> 
+</head>
+<body>
+	<div>
+		<h1>{{category}}</h1>
+		{% with messages = get_flashed_messages() %}
+  		{% if messages %}
+  		 <ul class=flashes>
+    		{% for message in messages %}
+      		<li>{{ message }}</li>
+    		{% endfor %}
+   		</ul>
+  		{% endif %}
+		{% endwith %}
+
+		{% if items|length %}
+		<div class="items">
+		{% for i in items %}	
+			<a href='{{url_for('item',item = i.name, category=category)}}'>{{i.name}}</a></br>
+		{% endfor %}
+		</div>
+		{% else %}	
+		<p>There's no items!</p>
+		{% endif %}
+
+		</br><a href = "{{url_for('catalog')}}">Back to Catalog</a>
+	</div>
+</body>
+</html>
