@@ -150,11 +150,8 @@ def gdisconnect():
         login_session['access_token'])
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
-    print("url: %s" % url)
-    print("result status: %s" % result['status'])
     # if logout successful remove user data from session
     if result['status'] == '200':
-        print("logging out")
         del login_session['access_token']
         del login_session['gplus_id']
         del login_session['username']
@@ -191,7 +188,7 @@ def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
-    except:
+    except exc.SQLAlchemyError:
         return None
 
 
@@ -199,11 +196,8 @@ def getUserID(email):
 @app.route('/catalog')
 def catalog():
     if 'username' not in login_session:
-        print ("not logged in")
         loggedIn = False
     else:
-        print ("logged in")
-        print("username: %s" % login_session['username'])
         loggedIn = True
     categories = session.query(Category).all()
     return render_template(
@@ -217,11 +211,13 @@ def category(category):
         mCategory = session.query(Category).filter_by(name=category).one()
         items = session.query(Item).filter_by(category=mCategory).all()
         creator = getUserInfo(mCategory.user_id)
-        if 'username' not in login_session or creator.id != login_session['user_id']:
+        if (('username' not in login_session) or
+                (creator.id != login_session['user_id'])):
             return render_template(
                 'category-public.html', category=category, items=items)
         else:
-            return render_template('category.html', category=category, items=items)
+            return render_template(
+                'category.html', category=category, items=items)
     except Exception, e:
         print(e)
         return render_template('404.html'), 404
@@ -286,12 +282,12 @@ def item(item, category):
     item = session.query(Item).filter(
         and_(Item.name == item, Item.category == category)).one()
     creator = getUserInfo(mCategory.user_id)
-    if 'username' not in login_session or creator.id != login_session['user_id']:
+    if (('username' not in login_session) or
+            (creator.id != login_session['user_id'])):
         return render_template(
             'item-public.html', item=item, category=category)
     else:
         return render_template('item.html', item=item, category=category)
-    
 
 
 @app.route('/catalog/<category>/<item>/edit', methods=['GET', 'POST'])
@@ -340,9 +336,9 @@ def newItem():
         mCategory = session.query(Category).filter_by(
             name=request.form['category']).one()
         # before commiting the new item check if it already exists
-        exists = session.query(Item).filter(
-            and_(Item.name == request.form['name'],
-                Item.category == mCategory)).scalar() is not None
+        exists = session.query(Item).filter(and_(
+            Item.name == request.form['name'],
+            Item.category == mCategory)).scalar() is not None
         if not exists:
             newItem = Item(
                 name=request.form['name'],
