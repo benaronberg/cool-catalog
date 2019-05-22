@@ -1,6 +1,6 @@
 # Cool Catalog
 
-This flask based python app provides the user with a generic CRUD-capable database secured with Google Authentication.  Any visitor to the site can view the its contents.  Once authenticated, users have the ability to create, edit, and delete objects in a PostgreSQL database.  Authenticated users also have JSON API endpoints available.
+This flask based python app provides the user with a generic CRUD-capable database secured with Google Authentication.  Any visitor to the site can view the its contents.  Once authenticated, users have the ability to create, edit, and delete objects in a PostgreSQL database.  Local permissions prevent users from editing or deleting objects they did not create.  Authenticated users also have JSON API endpoints available.
 
 ## Getting Started
 
