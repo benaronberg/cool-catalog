@@ -16,6 +16,7 @@
   		{% endif %}
 		{% endwith %}
 		<a href='{{url_for('editCategory', category=category)}}''>Edit Category</a></br>
+		<a href='{{url_for('deleteCategory', category=category)}}''>Delete Category</a></br>
 
 		{% if items|length %}
 		<div class="items">

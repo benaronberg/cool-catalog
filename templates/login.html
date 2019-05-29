@@ -15,6 +15,15 @@
 	</script>
 </head>
 <body>
+	{% with messages = get_flashed_messages() %}
+  		{% if messages %}
+  		 <ul class=flashes>
+    		{% for message in messages %}
+      		<li>{{ message }}</li>
+    		{% endfor %}
+   		</ul>
+  		{% endif %}
+	{% endwith %}
 	<button id="signinButton">Sign in with Google</button>
 	<div id="result"></div>
 

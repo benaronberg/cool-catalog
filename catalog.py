@@ -1,18 +1,19 @@
 #!/usr/bin/env python
-from flask import Flask
-from flask import render_template
-from flask import request
-from flask import redirect
-from flask import jsonify
-from flask import url_for
-from flask import flash
-from flask import session as login_session
-from flask import make_response
+from flask import (Flask,
+                   render_template,
+                   request,
+                   redirect,
+                   jsonify,
+                   url_for,
+                   flash,
+                   session as login_session,
+                   make_response)
+from functools import wraps
 from sqlalchemy import create_engine, asc, and_
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, Item, User
-from oauth2client.client import flow_from_clientsecrets
-from oauth2client.client import FlowExchangeError
+from oauth2client.client import (flow_from_clientsecrets,
+                                 FlowExchangeError)
 import random
 import string
 import httplib2
@@ -32,6 +33,17 @@ engine = create_engine('sqlite:///catalog.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' in login_session:
+            return f(*args, **kwargs)
+        else:
+            flash("Access denied")
+            return redirect(url_for('login'))
+    return decorated_function
 
 
 # Create anti-forgery state token
@@ -114,8 +126,8 @@ def gconnect():
 
     data = answer.json()
 
-    login_session['username'] = data['name']
-    login_session['picture'] = data['picture']
+    login_session['username'] = data.get('name', '')
+    login_session['picture'] = data.get('picture', '')
     login_session['email'] = data['email']
 
     # check if user exists, add to db if it does not
@@ -139,8 +151,6 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
-
-    print("in gdisconnect")
     access_token = login_session.get('access_token')
     # check if user is already logged out
     if access_token is None:
@@ -157,11 +167,12 @@ def gdisconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
+        del login_session['user_id']
         flash("Logged out!")
         return redirect(url_for('catalog'))
     # else send error message
     else:
-        print("logout failed - deleting login_session information")
+        print("Logout failed (probably an expired token). Session deleted")
         del login_session['access_token']
         del login_session['gplus_id']
         del login_session['username']
@@ -175,7 +186,8 @@ def createUser(login_session):
                    'email'], picture=login_session['picture'])
     session.add(newUser)
     session.commit()
-    user = session.query(User).filter_by(email=login_session['email']).one()
+    user = session.query(User).filter_by(
+        email=login_session['email']).one_or_none()
     return user.id
 
 
@@ -188,7 +200,7 @@ def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
-    except exc.SQLAlchemyError:
+    except Exception, e:
         return None
 
 
@@ -208,10 +220,12 @@ def catalog():
 @app.route('/catalog/<category>/items')
 def category(category):
     try:
-        mCategory = session.query(Category).filter_by(name=category).one()
+        mCategory = session.query(Category).filter_by(
+            name=category).one_or_none()
         items = session.query(Item).filter_by(category=mCategory).all()
         creator = getUserInfo(mCategory.user_id)
         if (('username' not in login_session) or
+                (bool(login_session.get('user_id'))) or
                 (creator.id != login_session['user_id'])):
             return render_template(
                 'category-public.html', category=category, items=items)
@@ -219,14 +233,13 @@ def category(category):
             return render_template(
                 'category.html', category=category, items=items)
     except Exception, e:
-        print(e)
+        print("Error in category: %s" % e)
         return render_template('404.html'), 404
 
 
 @app.route('/catalog/newcategory', methods=['GET', 'POST'])
+@login_required
 def newCategory():
-    if 'username' not in login_session:
-        return redirect(url_for('login'))
     if request.method == 'POST':
         newCategory = Category(
             name=request.form['name'], user_id=login_session['user_id'])
@@ -246,10 +259,10 @@ def newCategory():
 
 
 @app.route('/editCategory/<category>', methods=['GET', 'POST'])
+@login_required
 def editCategory(category):
-    if 'username' not in login_session:
-        return redirect(url_for('login'))
-    editedCategory = session.query(Category).filter_by(name=category).one()
+    editedCategory = session.query(Category).filter_by(
+        name=category).one_or_none()
     if request.method == 'POST':
         if request.form['name']:
             editedCategory.name = request.form['name']
@@ -262,12 +275,11 @@ def editCategory(category):
 
 
 @app.route('/deleteCategory/<category>', methods=['GET', 'POST'])
+@login_required
 def deleteCategory(category):
-    if 'username' not in login_session:
-        return redirect(url_for('login'))
     if request.method == 'POST':
         categoryToDelete = session.query(
-            Category).filter_by(name=category).one()
+            Category).filter_by(name=category).one_or_none()
         session.delete(categoryToDelete)
         session.commit()
         flash("Category deleted")
@@ -278,9 +290,9 @@ def deleteCategory(category):
 
 @app.route('/catalog/<category>/<item>')
 def item(item, category):
-    category = session.query(Category).filter_by(name=category).one()
+    mCategory = session.query(Category).filter_by(name=category).one_or_none()
     item = session.query(Item).filter(
-        and_(Item.name == item, Item.category == category)).one()
+        and_(Item.name == item, Item.category == mCategory)).one_or_none()
     creator = getUserInfo(mCategory.user_id)
     if (('username' not in login_session) or
             (creator.id != login_session['user_id'])):
@@ -291,12 +303,11 @@ def item(item, category):
 
 
 @app.route('/catalog/<category>/<item>/edit', methods=['GET', 'POST'])
+@login_required
 def editItem(item, category):
-    if 'username' not in login_session:
-        return redirect(url_for('login'))
-    mCategory = session.query(Category).filter_by(name=category).one()
+    mCategory = session.query(Category).filter_by(name=category).one_or_none()
     editedItem = session.query(Item).filter(
-        and_(Item.name == item, Item.category == mCategory)).one()
+        and_(Item.name == item, Item.category == mCategory)).one_or_none()
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
@@ -312,12 +323,11 @@ def editItem(item, category):
 
 
 @app.route('/catalog/<category>/<item>/delete', methods=['GET', 'POST'])
+@login_required
 def deleteItem(item, category):
-    if 'username' not in login_session:
-        return redirect(url_for('login'))
-    mCategory = session.query(Category).filter_by(name=category).one()
+    mCategory = session.query(Category).filter_by(name=category).one_or_none()
     mItem = session.query(Item).filter(
-        and_(Item.name == item, Item.category == mCategory)).one()
+        and_(Item.name == item, Item.category == mCategory)).one_or_none()
     if request.method == 'POST':
         session.delete(mItem)
         session.commit()
@@ -329,12 +339,11 @@ def deleteItem(item, category):
 
 
 @app.route('/catalog/newitem', methods=['GET', 'POST'])
+@login_required
 def newItem():
-    if 'username' not in login_session:
-        return redirect(url_for('login'))
     if request.method == 'POST':
         mCategory = session.query(Category).filter_by(
-            name=request.form['category']).one()
+            name=request.form['category']).one_or_none()
         # before commiting the new item check if it already exists
         exists = session.query(Item).filter(and_(
             Item.name == request.form['name'],
@@ -362,30 +371,35 @@ def newItem():
 
 # JSON API endpoints
 @app.route('/catalog/JSON')
+@login_required
 def categoriesJSON():
-    if 'username' not in login_session:
-        return redirect(url_for('login'))
     categories = session.query(Category).all()
     return jsonify(Categories=[c.serialize for c in categories])
 
 
 @app.route('/catalog/<category>/JSON')
+@login_required
 def categoryJSON(category):
-    if 'username' not in login_session:
-        return redirect(url_for('login'))
-    mCategory = session.query(Category).filter_by(name=category).one()
+    mCategory = session.query(Category).filter_by(name=category).one_or_none()
     items = session.query(Item).filter_by(category=mCategory).all()
-    return jsonify(Category=category, Items=[i.serialize for i in items])
+    print("items %s" % items)
+    print("mCategory %s" % mCategory)
+    if not items and category is not None:
+        return jsonify(Category=category, Items=[i.serialize for i in items])
+    else:
+        return render_template('404.html'), 404
 
 
 @app.route('/catalog/<category>/<item>/JSON')
+@login_required
 def itemJSON(item, category):
-    if 'username' not in login_session:
-        return redirect(url_for('login'))
-    category = session.query(Category).filter_by(name=category).one()
+    category = session.query(Category).filter_by(name=category).one_or_none()
     item = session.query(Item).filter(
-        and_(Item.name == item, Item.category == category)).one()
-    return jsonify(Item=item.serialize, Category=category.serialize)
+        and_(Item.name == item, Item.category == category)).one_or_none()
+    if item is not None and category is not None:
+        return jsonify(Item=item.serialize, Category=category.serialize)
+    else:
+        return render_template('404.html'), 404
 
 
 if __name__ == '__main__':
