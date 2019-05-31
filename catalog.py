@@ -225,7 +225,7 @@ def category(category):
         items = session.query(Item).filter_by(category=mCategory).all()
         creator = getUserInfo(mCategory.user_id)
         if (('username' not in login_session) or
-                (bool(login_session.get('user_id'))) or
+                (not bool(login_session.get('user_id'))) or
                 (creator.id != login_session['user_id'])):
             return render_template(
                 'category-public.html', category=category, items=items)
@@ -261,15 +261,20 @@ def newCategory():
 @app.route('/editCategory/<category>', methods=['GET', 'POST'])
 @login_required
 def editCategory(category):
-    editedCategory = session.query(Category).filter_by(
-        name=category).one_or_none()
     if request.method == 'POST':
-        if request.form['name']:
-            editedCategory.name = request.form['name']
-        session.add(editedCategory)
-        session.commit()
-        flash("Category modified")
-        return redirect(url_for('category', category=editedCategory.name))
+        editedCategory = session.query(Category).filter_by(
+            name=category).one_or_none()
+        creator = getUserInfo(editedCategory.user_id)
+        if creator.id != login_session['user_id']:
+            flash("Editing another user's category is not allowed")
+            return redirect(url_for('category', category=category))
+        else:
+            if request.form['name']:
+                editedCategory.name = request.form['name']
+            session.add(editedCategory)
+            session.commit()
+            flash("Category modified")
+            return redirect(url_for('category', category=editedCategory.name))
     else:
         return render_template('editcategory.html', category=category)
 
@@ -280,10 +285,15 @@ def deleteCategory(category):
     if request.method == 'POST':
         categoryToDelete = session.query(
             Category).filter_by(name=category).one_or_none()
-        session.delete(categoryToDelete)
-        session.commit()
-        flash("Category deleted")
-        return redirect(url_for('catalog'))
+        creator = getUserInfo(categoryToDelete.user_id)
+        if creator.id != login_session['user_id']:
+            flash("Deleting another user's category is not allowed")
+            return redirect(url_for('category', category=category))
+        else:
+            session.delete(categoryToDelete)
+            session.commit()
+            flash("Category deleted")
+            return redirect(url_for('catalog'))
     else:
         return render_template('deletecategory.html', category=category)
 
@@ -297,9 +307,9 @@ def item(item, category):
     if (('username' not in login_session) or
             (creator.id != login_session['user_id'])):
         return render_template(
-            'item-public.html', item=item, category=category)
+            'item-public.html', item=item, category=mCategory)
     else:
-        return render_template('item.html', item=item, category=category)
+        return render_template('item.html', item=item, category=mCategory)
 
 
 @app.route('/catalog/<category>/<item>/edit', methods=['GET', 'POST'])
@@ -309,14 +319,19 @@ def editItem(item, category):
     editedItem = session.query(Item).filter(
         and_(Item.name == item, Item.category == mCategory)).one_or_none()
     if request.method == 'POST':
-        if request.form['name']:
-            editedItem.name = request.form['name']
-        if request.form['description']:
-            editedItem.description = request.form['description']
-        session.add(editedItem)
-        session.commit()
-        flash("Item edited")
-        return redirect(url_for('category', category=category))
+        creator = getUserInfo(mCategory.user_id)
+        if creator.id != login_session['user_id']:
+            flash("Editing another user's item is not allowed")
+            return redirect(url_for('category', category=category))
+        else:
+            if request.form['name']:
+                editedItem.name = request.form['name']
+            if request.form['description']:
+                editedItem.description = request.form['description']
+            session.add(editedItem)
+            session.commit()
+            flash("Item edited")
+            return redirect(url_for('category', category=category))
     else:
         return render_template(
             'edititem.html', item=editedItem, category=mCategory)
@@ -329,10 +344,15 @@ def deleteItem(item, category):
     mItem = session.query(Item).filter(
         and_(Item.name == item, Item.category == mCategory)).one_or_none()
     if request.method == 'POST':
-        session.delete(mItem)
-        session.commit()
-        flash("Item deleted")
-        return redirect(url_for('category', category=category))
+        creator = getUserInfo(mCategory.user_id)
+        if creator.id != login_session['user_id']:
+            flash("Deleting another user's item is not allowed")
+            return redirect(url_for('category', category=category))
+        else:
+            session.delete(mItem)
+            session.commit()
+            flash("Item deleted")
+            return redirect(url_for('category', category=category))
     else:
         return render_template(
             'deleteitem.html', item=mItem, category=mCategory)
@@ -365,8 +385,13 @@ def newItem():
             return redirect(url_for(
                 'item', item=request.form['name'], category=mCategory.name))
     else:
-        categories = session.query(Category).all()
-        return render_template('newitem.html', categories=categories)
+        categories = session.query(Category).filter_by(
+            user_id=getUserID(login_session['email'])).all()
+        if categories:
+            return render_template('newitem.html', categories=categories)
+        else:
+            flash("Create a category first!")
+            return redirect(url_for('catalog'))
 
 
 # JSON API endpoints
@@ -382,8 +407,6 @@ def categoriesJSON():
 def categoryJSON(category):
     mCategory = session.query(Category).filter_by(name=category).one_or_none()
     items = session.query(Item).filter_by(category=mCategory).all()
-    print("items %s" % items)
-    print("mCategory %s" % mCategory)
     if not items and category is not None:
         return jsonify(Category=category, Items=[i.serialize for i in items])
     else:
